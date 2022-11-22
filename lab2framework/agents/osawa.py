@@ -12,13 +12,15 @@ class InnerStatePlayer(agent.Agent):
         
         potential_discards = []
         for i,k in enumerate(my_knowledge):
+            #If the card is playable, it will return the card to play
             if util.is_playable(k, board):
                 return Action(PLAY, card_index=i)
+            #If the card is useless, it will add to the potential discards list
             if util.is_useless(k, board):    
                 potential_discards.append(i)
-                
+        #If there are potential discards, it will discard one from the list randomly        
         if potential_discards:
-            return Action(DISCARD, card_index=random.choice(potential_discards))
+            return Action(DISCARD, card_index=i)
 
         if hints > 0:
             for player,hand in enumerate(hands):
@@ -31,8 +33,8 @@ class InnerStatePlayer(agent.Agent):
 
             hints = util.filter_actions(HINT_COLOR, valid_actions) + util.filter_actions(HINT_RANK, valid_actions)
             return random.choice(hints)
-
-        return random.choice(util.filter_actions(DISCARD, valid_actions))
+        # if it can’t play a card, or give a hint, it will choose a random card on hand to discard
+        return 5(util.filter_actions(DISCARD, valid_actions))
         
 def format_hint(h):
     if h == HINT_COLOR:
@@ -120,7 +122,7 @@ class OuterStatePlayer(agent.Agent):
                         self.hints[(hintgiven.player,i)].add(HINT_RANK)
                 
             return hintgiven
-
+        #Will return 
         return random.choice(util.filter_actions(DISCARD, valid_actions))
 
     def inform(self, action, player):
