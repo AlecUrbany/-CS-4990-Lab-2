@@ -71,7 +71,7 @@ class OuterStatePlayer(agent.Agent):
                 potential_discards.append(i)
         #If there are potential discards, it will discard one from the list randomly 
         if potential_discards:
-            return Action(DISCARD, card_index=random.choice(potential_discards))
+            return Action(DISCARD, card_index= len(potential_discards)-1)
          
         playables = []        
         for player,hand in enumerate(hands):
