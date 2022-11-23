@@ -12,15 +12,13 @@ class InnerStatePlayer(agent.Agent):
         
         potential_discards = []
         for i,k in enumerate(my_knowledge):
-            #If the card is playable, it will return the card to play
             if util.is_playable(k, board):
                 return Action(PLAY, card_index=i)
-            #If the card is useless, it will add to the potential discards list
             if util.is_useless(k, board):    
                 potential_discards.append(i)
-        #If there are potential discards, it will discard one from the list randomly        
+                
         if potential_discards:
-            return Action(DISCARD, card_index=i)
+            return Action(DISCARD, card_index=random.choice(potential_discards))
 
         if hints > 0:
             for player,hand in enumerate(hands):
@@ -33,8 +31,8 @@ class InnerStatePlayer(agent.Agent):
 
             hints = util.filter_actions(HINT_COLOR, valid_actions) + util.filter_actions(HINT_RANK, valid_actions)
             return random.choice(hints)
-        # if it can’t play a card, or give a hint, it will choose a random card on hand to discard
-        return random.choice(util.filter_actions(DISCARD, valid_actions))
+
+        return Action(DISCARD, card_index=1)
         
 def format_hint(h):
     if h == HINT_COLOR:
@@ -62,16 +60,26 @@ class OuterStatePlayer(agent.Agent):
         my_knowledge = knowledge[nr]
         
         potential_discards = []
+
+        probably = []
+
+        probablynot = []
         for i,k in enumerate(my_knowledge):
-            #If the card is playable, it will return the card to play
+            pp = util.probability(util.useless(board),k)
+            p = util.probability(util.playable(board),k)
+            probably.append(p)
+            probablynot.append(pp)
+
+        for i,k in enumerate(my_knowledge):
+            #If the card is playable and is the most useful, it will return the card to play
             if util.is_playable(k, board):
                 return Action(PLAY, card_index=i)
             #If the card is useless, it will add to the potential discards list
             if util.is_useless(k, board):    
                 potential_discards.append(i)
-        #If there are potential discards, it will discard one from the list randomly 
+                
         if potential_discards:
-            return Action(DISCARD, card_index= len(potential_discards)-1)
+            return Action(DISCARD, card_index = potential_discards[-1])
          
         playables = []        
         for player,hand in enumerate(hands):
@@ -80,6 +88,7 @@ class OuterStatePlayer(agent.Agent):
                     if card.is_playable(board):                              
                         playables.append((player,card_index))
         
+        #Cards other people can play
         playables.sort(key=lambda which: -hands[which[0]][which[1]].rank)
         while playables and hints > 0:
             player,card_index = playables[0]
@@ -124,8 +133,9 @@ class OuterStatePlayer(agent.Agent):
                         self.hints[(hintgiven.player,i)].add(HINT_RANK)
                 
             return hintgiven
-        #Will discard a card randomly and without prejudice
-        return random.choice(util.filter_actions(DISCARD, valid_actions))
+        #Rather than discarding a random card, it will discard a card at index spot #1. This is similar to the chop strategy.
+        #However, instead of the card furthest to the right, it's the card second to the left
+        return Action(DISCARD, card_index=1)
 
     def inform(self, action, player):
         if action.type in [PLAY, DISCARD]:
